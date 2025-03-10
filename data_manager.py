@@ -95,8 +95,8 @@ class DataManager:
         """Save player match data to appropriate player match file, skipping existing entries"""
         file = self.swiftplay_player_match_file if queue_type == "swiftplay" else self.ranked_player_match_file
         
-        # Read existing data (only getting the last 100 rows, since that should be where any duplicates will be)
-        existing_df = pd.read_csv(file).tail(100)
+        # Read existing data
+        existing_df = pd.read_csv(file)
         
         # Filter out matches that already exist for each player
         new_matches = []
