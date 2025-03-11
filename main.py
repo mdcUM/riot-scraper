@@ -168,7 +168,7 @@ class LeagueBFS:
                 
             except Exception as e:
                 logging.error(f"Error processing match {match_id}: {str(e)}")
-                continue
+                raise
             
         return player_match_data
 

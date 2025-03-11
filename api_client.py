@@ -109,9 +109,5 @@ class RiotAPIClient:
         cache_key = (puuid, champion_id)
         if cache_key not in self.champion_mastery_cache:
             url = f"https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}/by-champion/{champion_id}"
-            try:
-                self.champion_mastery_cache[cache_key] = self._make_request(url)
-            except Exception:
-                # If request fails, cache None to avoid repeated failed requests
-                self.champion_mastery_cache[cache_key] = None
+            self.champion_mastery_cache[cache_key] = self._make_request(url)
         return self.champion_mastery_cache[cache_key] 
