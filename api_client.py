@@ -49,8 +49,13 @@ class RiotAPIClient:
         self.rank_cache = {}  # puuid -> rank info
         self.champion_mastery_cache = {}  # (puuid, championId) -> mastery info
         
-    def _make_request(self, url: str) -> Dict:
-        """Make API request with retry logic and rate limiting"""
+    def _make_request(self, url: str, allow_404: bool = False) -> Dict | None:
+        """
+        Make API request with retry logic and rate limiting
+        Args:
+            url: API endpoint URL
+            allow_404: If True, return None on 404 instead of retrying/raising
+        """
         self.rate_limit.wait_if_needed()
         
         max_retries = 3
@@ -62,6 +67,8 @@ class RiotAPIClient:
                 
                 if response.status_code == 200:
                     return response.json()
+                elif response.status_code == 404 and allow_404:
+                    return None
                 elif response.status_code == 429:
                     retry_after = int(response.headers.get("Retry-After", 60))
                     logging.warning(f"Rate limit exceeded. Waiting {retry_after} seconds")
@@ -104,10 +111,10 @@ class RiotAPIClient:
             self.rank_cache[puuid] = self._make_request(url)
         return self.rank_cache[puuid]
     
-    def get_champion_mastery(self, puuid: str, champion_id: int) -> Dict:
+    def get_champion_mastery(self, puuid: str, champion_id: int) -> Dict | None:
         """Get champion mastery with caching"""
         cache_key = (puuid, champion_id)
         if cache_key not in self.champion_mastery_cache:
             url = f"https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}/by-champion/{champion_id}"
-            self.champion_mastery_cache[cache_key] = self._make_request(url)
+            self.champion_mastery_cache[cache_key] = self._make_request(url, allow_404=True)
         return self.champion_mastery_cache[cache_key] 
